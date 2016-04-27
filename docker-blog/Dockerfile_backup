@@ -1,0 +1,42 @@
+FROM ubuntu:14.04
+MAINTAINER Zhanshuai Meng (nju.mzs@outlook.com)
+
+ENV BLOG_USER ="mzsvps" 
+ENV BASE_DIR = "/home/${BLOG_USER}" 
+ENV BLOG_DIR="${BASE_DIR}/sites/blog" 
+ENV POST_DIR="${BLOG_DIR}/source/_posts" \
+    NODE_DIR="/opt/nodejs"
+
+# install dependent tools
+RUN apt-get update && \
+    apt-get install -y wget npm git && \
+    echo "install wget npm git tools over" && \
+    rm -rf /var/lib/apt/lists/*
+
+# install nodejs v0.12.7
+RUN wget https://npm.taobao.org/mirrors/node/v0.12.7/node-v0.12.7-linux-x64.tar.gz && \
+    tar xvzf node-v0.12.7-linux-x64.tar.gz && \
+    echo "node zip get" 
+RUN cd /opt && mkdir nodejs && echo "build dic over"
+RUN mv node-v0.12.7-linux-x64 /opt/nodejs && \
+    echo "node compile over" && \
+    echo "NODE_HOME=${NODE_DIR}" >> /etc/profile && \
+    echo "PATH=\$PATH:\$NODE_HOME/BIN" >> /etc/profile && \
+    echo "NODE_PATH=\$NODE_HOME/lib/node_modules" >> /etc/profile && \
+    echo "install nodejs over"
+
+RUN echo "setup the hexo env" && \
+    cd /root/  && \
+    npm install hexo-cli -g && \
+    hexo init blog && \
+    rm -rf blog/*  && \
+    echo "hexo set up over"
+
+
+EXPOSE 22/tcp 80/tcp 4000/tcp
+
+RUN echo "${BLOG_DIR}"
+VOLUME ["${BLOG_DIR}","/root/blog"]
+RUN echo "volume mount over "
+CMD ["/root/blog/hexo server"]
+
